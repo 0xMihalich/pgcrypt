@@ -15,6 +15,12 @@ Storage format for PGCopy dump packed into LZ4, ZSTD or uncompressed with meta d
 
 ## Installation
 
+### From pip
+
+```bash
+pip install pgcopylib
+```
+
 ### From local directory
 
 ```bash
