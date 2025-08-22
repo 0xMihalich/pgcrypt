@@ -1,3 +1,7 @@
+"""Library for read and write storage format for PGCopy dump
+packed into LZ4, ZSTD or uncompressed
+with meta data information packed into zlib."""
+
 from .enums import CompressionMethod
 from .errors import (
     PGCryptError,
