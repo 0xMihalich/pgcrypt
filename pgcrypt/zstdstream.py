@@ -123,14 +123,13 @@ class ZstdDecompressionReader:
 
     def readall(self):
         chunks = BytesIO()
-        pos = 0
-        read_length = 1048576
 
-        chunks.write(self.read(read_length))
+        while True:
+            chunk = self.read(1048576)
+            if not chunk:
+                break
 
-        while chunks.tell() > pos:
-            pos += chunks.tell()
-            chunks.write(self.read(read_length))
+            chunks.write(chunk)
 
         return chunks.getvalue()
 
