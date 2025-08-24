@@ -108,8 +108,7 @@ class PGCryptReader:
  -----------
 | Dump info |
  -----------
-Total columns: {self.pgcopy.num_columns}
-Total raws: {self.pgcopy.num_rows}
+Total columns: {len(self.columns)}
 Compression method: {self.compression_method.name}
 Unpacked size: {self.pgcopy_data_length} bytes
 Compressed size: {self.pgcopy_compressed_length} bytes
