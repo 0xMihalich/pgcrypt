@@ -77,7 +77,11 @@ class PGCryptWriter:
             self.compression_method,
         )
 
-        pgcopy_writer.write(pgcopy.read())
+        if hasattr(pgcopy, "copy_reader"):
+            for data in pgcopy.copy_reader():
+                pgcopy_writer.write(data)
+        else:
+            pgcopy_writer.write(pgcopy.read())
 
         if not isinstance(pgcopy_writer, OffsetOpener):
             pgcopy_writer.close()
