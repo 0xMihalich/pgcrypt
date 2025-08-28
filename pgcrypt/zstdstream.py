@@ -77,6 +77,17 @@ class ZstdDecompressionReader:
 
         return False
 
+    def reinit(self) -> None:
+        """Reinitialized class."""
+
+        self._source.seek(0)
+        self._decompressor._ensure_dctx()
+        self._bytes_decompressed = 0
+        self._finished_input = False
+        self._finished_output = False
+        self._in_buffer = ffi.new("ZSTD_inBuffer *")
+        self._source_buffer = None
+
     def readable(self):
         return True
 
@@ -314,15 +325,6 @@ class ZstdDecompressionReader:
         whence: int = SEEK_SET,
     ) -> int:
 
-        def reinit() -> None:
-            self._source.seek(0)
-            self._closed = False
-            self._bytes_decompressed = 0
-            self._finished_input = False
-            self._finished_output = False
-            self._in_buffer = ffi.new("ZSTD_inBuffer *")
-            self._source_buffer = None
-
         if self._closed:
             raise ValueError("stream is closed")
 
@@ -337,15 +339,14 @@ class ZstdDecompressionReader:
                 return pos
 
             if pos < self._bytes_decompressed:
-                self.seek(0, SEEK_END)
-                reinit()
+                self.reinit()
                 return self.seek(pos, whence)
 
             read_amount = pos - self._bytes_decompressed
 
         elif whence == SEEK_CUR:
             if pos < 0:
-                reinit()
+                self.reinit()
                 return self.seek(pos, whence)
 
             read_amount = pos
@@ -445,16 +446,16 @@ class CustomZstdDecompressor(ZstdDecompressor):
 
 
 def zstd_file(
-    fileobj: BufferedReader|BufferedWriter,
+    fileobj: BufferedReader | BufferedWriter,
     mode: str = "rb",
-) -> ZstdDecompressionReader|ZstdCompressionWriter:
+) -> ZstdDecompressionReader | ZstdCompressionWriter:
     """ZSTD stream reader/writer."""
 
     if mode not in ("rb", "rb+", "wb"):
         raise PGCryptModeError()
 
     closefd: bool = False
-    ctx: CustomZstdDecompressor|ZstdCompressor = {
+    ctx: CustomZstdDecompressor | ZstdCompressor = {
         "rb": CustomZstdDecompressor,
         "rb+": ZstdCompressor,
         "wb": ZstdCompressor,

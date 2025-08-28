@@ -3,6 +3,7 @@ from struct import unpack
 from typing import (
     Any,
     Union,
+    Optional,
 )
 from zlib import (
     crc32,
@@ -13,7 +14,7 @@ from lz4.frame import LZ4FrameFile
 from pandas import DataFrame as PdFrame
 from pgcopylib import (
     PGCopy,
-    PGDataType,
+    PGOid,
 )
 from polars import DataFrame as PlFrame
 
@@ -34,9 +35,8 @@ class PGCryptReader:
 
     fileobj: BufferedReader
     columns: list[str]
-    dtypes: list[PGDataType]
+    pgtypes: list[PGOid]
     pgcopy: PGCopy
-
     header: bytes
     metadata_crc: int
     metadata_length: int
@@ -50,6 +50,7 @@ class PGCryptReader:
         LZ4FrameFile,
         ZstdDecompressionReader,
     ]
+    _str: Optional[str]
 
     def __init__(
         self,
@@ -57,8 +58,8 @@ class PGCryptReader:
     ) -> None:
         """Class initialization."""
 
-        self.fileobj: BufferedReader = fileobj
-        self.header: bytes = self.fileobj.read(8)
+        self.fileobj = fileobj
+        self.header = self.fileobj.read(8)
 
         if self.header != HEADER:
             raise PGCryptHeaderError()
@@ -67,12 +68,12 @@ class PGCryptReader:
             "!2L",
             self.fileobj.read(8),
         )
-        self.metadata_zlib: bytes = self.fileobj.read(self.metadata_length)
+        self.metadata_zlib = self.fileobj.read(self.metadata_length)
 
         if crc32(self.metadata_zlib) != self.metadata_crc:
             raise PGCryptMetadataCrcError()
 
-        self.columns, self.dtypes = metadata_reader(
+        self.columns, self.pgtypes = metadata_reader(
             decompress(self.metadata_zlib)
         )
         (
@@ -92,9 +93,9 @@ class PGCryptReader:
         )
         self.pgcopy = PGCopy(
             self.pgcopy_compressor,
-            self.columns,
-            self.dtypes,
+            self.pgtypes,
         )
+        self._str = None
 
     def __repr__(self) -> str:
         """String representation in interpreter."""
@@ -104,17 +105,43 @@ class PGCryptReader:
     def __str__(self) -> str:
         """String representation of PGCryptReader."""
 
-        return f"""<PostgreSQL/GreenPlum encrypted dump>
- -----------
-| Dump info |
- -----------
+        def to_col(text: str) -> str:
+            """Format string element."""
+
+            text = text[:14] + "…" if len(text) > 15 else text
+            return f" {text: <15} "
+
+        if not self._str:
+            empty_line = (
+                "│-----------------+-----------------│"
+            )
+            end_line = (
+                "└─────────────────┴─────────────────┘"
+            )
+            _str = [
+                "<PostgreSQL/GreenPlum encrypted dump>",
+                "┌─────────────────┬─────────────────┐",
+                "│ Column Name     │ PostgreSQL Type │",
+                "╞═════════════════╪═════════════════╡",
+            ]
+
+            for column, pgtype in zip(self.columns, self.pgtypes):
+                _str.append(
+                    f"│{to_col(column)}│{to_col(pgtype.name)}│",
+                )
+                _str.append(empty_line)
+
+            _str[-1] = end_line
+            self._str = "\n".join(_str) + f"""
 Total columns: {len(self.columns)}
 Compression method: {self.compression_method.name}
 Unpacked size: {self.pgcopy_data_length} bytes
 Compressed size: {self.pgcopy_compressed_length} bytes
 Compression rate: {round(
     (self.pgcopy_compressed_length / self.pgcopy_data_length) * 100, 2
-)} %"""
+)} %
+"""
+        return self._str
 
     def to_python(self) -> list[Any]:
         """Convert to python objects."""

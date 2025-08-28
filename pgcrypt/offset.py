@@ -12,7 +12,7 @@ class OffsetOpener:
 
     def __init__(
         self,
-        fileobj: BufferedReader|BufferedWriter,
+        fileobj: BufferedReader | BufferedWriter,
     ) -> None:
         """Class initialization."""
 
@@ -45,7 +45,7 @@ class OffsetOpener:
         )
 
     @property
-    def __class__(self) -> BufferedReader|BufferedWriter:
+    def __class__(self) -> BufferedReader | BufferedWriter:
         """OffsetOpener class exploit."""
 
         return self.fileobj.__class__

@@ -88,6 +88,9 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 - write_metadata(metadata) - Make first blocks with metadata. Parameter: metadata as bytes
 - write_pgcopy(pgcopy) - Make second blocks with pgcopy. Parameter: pgcopy as BufferedReader
 - write(metadata, pgcopy) - Write PGCrypt file. Parameters: metadata as bytes, pgcopy as BufferedReader
+- from_python(dtype_data) - Write PGCrypt file from python objects. Parameter: dtype_data as python object list
+- from_pandas(data_frame) - Write PGCrypt file from pandas.DataFrame. Parameter: data_frame as pandas.DataFrame
+- from_polars(data_frame) - Write PGCrypt file from polars.DataFrame. Parameter: data_frame as polars.DataFrame
 
 ## Errors
 
