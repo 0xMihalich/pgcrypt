@@ -66,8 +66,16 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 ### Methods and attributes
 
 - columns - List columns names
-- dtypes - List PGDataType for all columns
+- dtypes - List PGOid for all columns
 - pgcopy - PGCopy object
+- header - b"PGCRYPT\n" 8 bytes
+- metadata_crc - integer crc32 sign for metadata_zlib object
+- metadata_length - integer length metadata_zlib in bytes
+- metadata_zlib - zlib packed metadata in bytes
+- compression_method - CompressionMethod object
+- pgcopy_compressed_length - integer packed pgcopy data length
+- pgcopy_data_length - integer unpacked pgcopy data length
+- offset_opener - OffsetOpener object
 - pgcopy_compressor - File object for reading uncompressed PGCopy data
 - to_bytes() - Method for reading uncompressed PGCopy data as bytes
 - to_python() - Method for reading uncompressed PGCopy data as list of python objects
@@ -83,8 +91,12 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 
 ### Methods and attributes
 
+- columns - List columns names
+- dtypes - List PGOid for all columns
 - metadata_end - Integer, zlib packed metadata end position
 - fileobj_end - Integer, packed pgcopy data end position
+- pgcopy_compressed_length - integer packed pgcopy data length
+- pgcopy_data_length - integer unpacked pgcopy data length
 - write_metadata(metadata) - Make first blocks with metadata. Parameter: metadata as bytes
 - write_pgcopy(pgcopy) - Make second blocks with pgcopy. Parameter: pgcopy as BufferedReader
 - write(metadata, pgcopy) - Write PGCrypt file. Parameters: metadata as bytes, pgcopy as BufferedReader
