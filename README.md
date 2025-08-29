@@ -59,11 +59,11 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 
 ## Class PGCryptReader
 
-### Initialization parameters
+Initialization parameters
 
 - fileobj - BufferedReader object (file, BytesIO e t.c)
 
-### Methods and attributes
+Methods and attributes
 
 - columns - List columns names
 - dtypes - List PGOid for all columns
@@ -84,12 +84,12 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 
 ## Class PGCryptWriter
 
-### Initialization parameters
+Initialization parameters
 
 - fileobj - BufferedReader object (file, BytesIO e t.c)
 - compression_method - CompressionMethod object (default is CompressionMethod.LZ4)
 
-### Methods and attributes
+Methods and attributes
 
 - columns - List columns names
 - dtypes - List PGOid for all columns

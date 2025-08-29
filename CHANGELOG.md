@@ -1,6 +1,7 @@
 # Version History
 
 ## 0.1.1
+
 * Add CHANGELOG.md
 * Update README.md
 * Improve ZstdDecompressionReader.seek() method
