@@ -1,7 +1,11 @@
 # Version History
 
 ## 0.1.1
+<<<<<<< HEAD
 * Rename project to pgpack
+=======
+
+>>>>>>> 6d7b2384f10d9ef919711ae35497eb2fb2f6be0c
 * Add CHANGELOG.md
 * Update README.md
 * Improve ZstdDecompressionReader.seek() method
