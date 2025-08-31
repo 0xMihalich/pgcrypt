@@ -1,10 +1,10 @@
-# PGCrypt format
+# PGPack format
 
 Storage format for PGCopy dump packed into LZ4, ZSTD or uncompressed with meta data information packed into zlib
 
-## PGCrypt structure
+## PGPack structure
 
-- header b"PGCRYPT\n" 8 bytes
+- header b"PGPACK\n\x00" 8 bytes
 - unsigned long integer zlib.crc32 for packed metadata 4 bytes
 - unsigned long integer zlib packed metadata length 4 bytes
 - zlib packed metadata
@@ -18,7 +18,7 @@ Storage format for PGCopy dump packed into LZ4, ZSTD or uncompressed with meta d
 ### From pip
 
 ```bash
-pip install pgcopylib
+pip install pgpack
 ```
 
 ### From local directory
@@ -30,7 +30,7 @@ pip install .
 ### From git
 
 ```bash
-pip install git+https://github.com/0xMihalich/pgcrypt
+pip install git+https://github.com/0xMihalich/pgpack
 ```
 
 ## Metadata format
@@ -50,14 +50,14 @@ list[list[column number int, list[column name str, column oid int]]]
 ### Get ENUM for set compression method
 
 ```python
-from pgcrypt import CompressionMethod
+from pgpack import CompressionMethod
 
 compression_method = CompressionMethod.NONE  # no compression
 compression_method = CompressionMethod.LZ4  # lz4 compression (default)
 compression_method = CompressionMethod.ZSTD  # zstd compression
 ```
 
-## Class PGCryptReader
+## Class PGPackReader
 
 ### Initialization parameters
 
@@ -68,7 +68,7 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 - columns - List columns names
 - dtypes - List PGOid for all columns
 - pgcopy - PGCopy object
-- header - b"PGCRYPT\n" 8 bytes
+- header - b"PGPack\n" 8 bytes
 - metadata_crc - integer crc32 sign for metadata_zlib object
 - metadata_length - integer length metadata_zlib in bytes
 - metadata_zlib - zlib packed metadata in bytes
@@ -82,7 +82,7 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 - to_pandas() - Method for reading uncompressed PGCopy data as pandas.DataFrame
 - to_polars() - Method for reading uncompressed PGCopy data as polars.DataFrame
 
-## Class PGCryptWriter
+## Class PGPackWriter
 
 ### Initialization parameters
 
@@ -99,14 +99,14 @@ compression_method = CompressionMethod.ZSTD  # zstd compression
 - pgcopy_data_length - integer unpacked pgcopy data length
 - write_metadata(metadata) - Make first blocks with metadata. Parameter: metadata as bytes
 - write_pgcopy(pgcopy) - Make second blocks with pgcopy. Parameter: pgcopy as BufferedReader
-- write(metadata, pgcopy) - Write PGCrypt file. Parameters: metadata as bytes, pgcopy as BufferedReader
-- from_python(dtype_data) - Write PGCrypt file from python objects. Parameter: dtype_data as python object list
-- from_pandas(data_frame) - Write PGCrypt file from pandas.DataFrame. Parameter: data_frame as pandas.DataFrame
-- from_polars(data_frame) - Write PGCrypt file from polars.DataFrame. Parameter: data_frame as polars.DataFrame
+- write(metadata, pgcopy) - Write PGPack file. Parameters: metadata as bytes, pgcopy as BufferedReader
+- from_python(dtype_data) - Write PGPack file from python objects. Parameter: dtype_data as python object list
+- from_pandas(data_frame) - Write PGPack file from pandas.DataFrame. Parameter: data_frame as pandas.DataFrame
+- from_polars(data_frame) - Write PGPack file from polars.DataFrame. Parameter: data_frame as polars.DataFrame
 
 ## Errors
 
-- PGCryptError - Base PGCrypt error
-- PGCryptHeaderError - Error header signature
-- PGCryptMetadataCrcError - Error metadata crc32
-- PGCryptModeError - Error fileobject mode
+- PGPackError - Base PGPack error
+- PGPackHeaderError - Error header signature
+- PGPackMetadataCrcError - Error metadata crc32
+- PGPackModeError - Error fileobject mode

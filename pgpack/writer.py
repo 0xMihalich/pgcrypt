@@ -23,7 +23,7 @@ from pgcopylib import (
 
 from .compressor import pgcopy_compressor
 from .enums import CompressionMethod
-from .errors import PGCryptMetadataCrcError
+from .errors import PGPackMetadataCrcError
 from .header import HEADER
 from .metadata import (
     metadata_from_frame,
@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from zstandard import ZstdCompressionWriter
 
 
-class PGCryptWriter:
-    """Class for write PGCrypt format."""
+class PGPackWriter:
+    """Class for write PGPack format."""
 
     fileobj: BufferedWriter
     compression_method: CompressionMethod
@@ -97,7 +97,7 @@ class PGCryptWriter:
         """Make blocks with pgcopy."""
 
         if not self.metadata_end:
-            raise PGCryptMetadataCrcError()
+            raise PGPackMetadataCrcError()
 
         compression_method: bytes = pack("!B", self.compression_method.value)
 
@@ -142,7 +142,7 @@ class PGCryptWriter:
         metadata: bytes,
         pgcopy: BufferedReader,
     ) -> int:
-        """Write PGCrypt file."""
+        """Write PGPack file."""
 
         self.write_metadata(metadata)
         self.write_pgcopy(pgcopy)
@@ -154,10 +154,10 @@ class PGCryptWriter:
         self,
         dtype_data: list[list[Any]],
     ) -> None:
-        """Write PGCrypt file from python objects."""
+        """Write PGPack file from python objects."""
 
         if not self.metadata_end:
-            raise PGCryptMetadataCrcError()
+            raise PGPackMetadataCrcError()
 
         compression_method: bytes = pack("!B", self.compression_method.value)
 
@@ -198,7 +198,7 @@ class PGCryptWriter:
         self,
         data_frame: PdFrame,
     ) -> None:
-        """Write PGCrypt file from pandas.DataFrame."""
+        """Write PGPack file from pandas.DataFrame."""
 
         if not self.metadata_end:
             self.write_metadata(metadata_from_frame(data_frame))
@@ -209,7 +209,7 @@ class PGCryptWriter:
         self,
         data_frame: PlFrame,
     ) -> None:
-        """Write PGCrypt file from polars.DataFrame."""
+        """Write PGPack file from polars.DataFrame."""
 
         if not self.metadata_end:
             self.write_metadata(metadata_from_frame(data_frame))
@@ -222,7 +222,7 @@ class PGCryptWriter:
         return self.__str__()
 
     def __str__(self) -> str:
-        """String representation of PGCryptReader."""
+        """String representation of PGPackReader."""
 
         def to_col(text: str) -> str:
             """Format string element."""
@@ -238,7 +238,7 @@ class PGCryptWriter:
                 "└─────────────────┴─────────────────┘"
             )
             _str = [
-                "<PostgreSQL/GreenPlum encrypted dump>",
+                "<PostgreSQL/GreenPlum compressed dump>",
                 "┌─────────────────┬─────────────────┐",
                 "│ Column Name     │ PostgreSQL Type │",
                 "╞═════════════════╪═════════════════╡",

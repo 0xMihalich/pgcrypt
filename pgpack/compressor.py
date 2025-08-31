@@ -2,7 +2,7 @@ from typing import Union
 
 from lz4.frame import LZ4FrameFile
 
-from .errors import PGCryptError
+from .errors import PGPackError
 from .enums import CompressionMethod
 from .offset import OffsetOpener
 from .zstdstream import (
@@ -32,4 +32,4 @@ def pgcopy_compressor(
     if compression_method == CompressionMethod.ZSTD:
         return zstd_file(offset_opener, offset_opener.mode)
 
-    raise PGCryptError()
+    raise PGPackError()

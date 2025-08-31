@@ -1,18 +1,19 @@
 # Version History
 
 ## 0.1.1
+* Rename project to pgpack
 * Add CHANGELOG.md
 * Update README.md
 * Improve ZstdDecompressionReader.seek() method
 
 ## 0.1.0
 
-* Add methods from_python(),  from_pandas(),  from_polars() to PGCryptWriter
+* Add methods from_python(),  from_pandas(),  from_polars() to PGPackWriter
 * Add detect_oid function for generate oids from python types
 * Add metadata_from_frame function
 * Rename dtypes to pgtypes
 * Change PGDataType to PGOid in pgtypes
-* New __str__ and __repr__ output in PGCryptReader and PGCryptWriter
+* New __str__ and __repr__ output in PGPackReader and PGPackWriter
 
 ## 0.0.4
 
@@ -31,4 +32,4 @@
 
 ## 0.0.1
 
-First version of the library pgcopy_parser
+First version of the library pgcrypt

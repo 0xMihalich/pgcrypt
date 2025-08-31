@@ -6,13 +6,13 @@ from setuptools import (
 
 
 shutil.rmtree("build", ignore_errors=True)
-shutil.rmtree("pgcrypt.egg-info", ignore_errors=True)
+shutil.rmtree("pgpack.egg-info", ignore_errors=True)
 
 with open(file="README.md", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="pgcrypt",
+    name="pgpack",
     version="0.1.1",
     packages=find_packages(),
     author="0xMihalich",
@@ -21,7 +21,7 @@ setup(
         "PGCopy dump packed into LZ4, ZSTD or "
         "uncompressed with meta data information packed into zlib."
     ),
-    url="https://github.com/0xMihalich/pgcrypt",
+    url="https://github.com/0xMihalich/pgpack",
     long_description=long_description,
     long_description_content_type="text/markdown",
     zip_safe=False,

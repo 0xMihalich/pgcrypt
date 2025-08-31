@@ -26,7 +26,7 @@ from zstandard._cffi import ( # type: ignore
     lib,
 )
 
-from .errors import PGCryptModeError
+from .errors import PGPackModeError
 
 
 def _zstd_error(zresult):
@@ -452,7 +452,7 @@ def zstd_file(
     """ZSTD stream reader/writer."""
 
     if mode not in ("rb", "rb+", "wb"):
-        raise PGCryptModeError()
+        raise PGPackModeError()
 
     closefd: bool = False
     ctx: CustomZstdDecompressor | ZstdCompressor = {

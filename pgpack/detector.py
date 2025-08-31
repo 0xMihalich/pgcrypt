@@ -11,7 +11,10 @@ from ipaddress import (
     IPv6Address,
     IPv6Network,
 )
-from typing import Any, Union
+from typing import (
+    Any,
+    Union,
+)
 from types import NoneType
 from uuid import UUID
 

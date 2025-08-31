@@ -1,1 +1,0 @@
-HEADER = b"PGCRYPT\n"

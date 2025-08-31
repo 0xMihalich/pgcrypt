@@ -20,8 +20,8 @@ from polars import DataFrame as PlFrame
 
 from .compressor import pgcopy_compressor
 from .errors import (
-    PGCryptHeaderError,
-    PGCryptMetadataCrcError,
+    PGPackHeaderError,
+    PGPackMetadataCrcError,
 )
 from .enums import CompressionMethod
 from .header import HEADER
@@ -30,8 +30,8 @@ from .offset import OffsetOpener
 from .zstdstream import ZstdDecompressionReader
 
 
-class PGCryptReader:
-    """Class for read PGCrypt format."""
+class PGPackReader:
+    """Class for read PGPack format."""
 
     fileobj: BufferedReader
     columns: list[str]
@@ -62,7 +62,7 @@ class PGCryptReader:
         self.header = self.fileobj.read(8)
 
         if self.header != HEADER:
-            raise PGCryptHeaderError()
+            raise PGPackHeaderError()
 
         self.metadata_crc, self.metadata_length = unpack(
             "!2L",
@@ -71,7 +71,7 @@ class PGCryptReader:
         self.metadata_zlib = self.fileobj.read(self.metadata_length)
 
         if crc32(self.metadata_zlib) != self.metadata_crc:
-            raise PGCryptMetadataCrcError()
+            raise PGPackMetadataCrcError()
 
         self.columns, self.pgtypes = metadata_reader(
             decompress(self.metadata_zlib)
@@ -103,7 +103,7 @@ class PGCryptReader:
         return self.__str__()
 
     def __str__(self) -> str:
-        """String representation of PGCryptReader."""
+        """String representation of PGPackReader."""
 
         def to_col(text: str) -> str:
             """Format string element."""
@@ -119,7 +119,7 @@ class PGCryptReader:
                 "└─────────────────┴─────────────────┘"
             )
             _str = [
-                "<PostgreSQL/GreenPlum encrypted dump>",
+                "<PostgreSQL/GreenPlum compressed dump>",
                 "┌─────────────────┬─────────────────┐",
                 "│ Column Name     │ PostgreSQL Type │",
                 "╞═════════════════╪═════════════════╡",
