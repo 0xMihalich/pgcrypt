@@ -1,11 +1,16 @@
 # Version History
 
-## 0.1.1
-<<<<<<< HEAD
-* Rename project to pgpack
-=======
+## 0.1.2
 
->>>>>>> 6d7b2384f10d9ef919711ae35497eb2fb2f6be0c
+* Rename project to pgpack
+* Rename classes from PGCrypt* to PGPack*
+* Change header to b"PGPACK\n\x00"
+* Add size parameter into to_python, to_pandas, to_polars and to_bytes methods
+* Update requirements.txt
+* Fix nan values from pandas.DataFrame
+
+## 0.1.1
+
 * Add CHANGELOG.md
 * Update README.md
 * Improve ZstdDecompressionReader.seek() method

@@ -203,7 +203,20 @@ class PGPackWriter:
         if not self.metadata_end:
             self.write_metadata(metadata_from_frame(data_frame))
 
-        return self.from_python(data_frame.values)
+        return self.from_python([[
+            {float("nan"): None}.get(
+                data_value,
+                int(data_value)
+                if self.pgtypes[column] in (
+                    PGOid.int2,
+                    PGOid.int4,
+                    PGOid.int8,
+                    PGOid.oid,
+                )
+                else data_value,
+            )
+            for column, data_value in enumerate(data_values)
+        ] for data_values in data_frame.values])
 
     def from_polars(
         self,

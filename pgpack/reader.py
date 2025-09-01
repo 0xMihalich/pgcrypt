@@ -143,31 +143,31 @@ Compression rate: {round(
 """
         return self._str
 
-    def to_python(self) -> list[Any]:
+    def to_python(self, size: int = -1) -> list[Any]:
         """Convert to python objects."""
 
-        return self.pgcopy.read()
+        return self.pgcopy.read(size)
 
-    def to_pandas(self) -> PdFrame:
+    def to_pandas(self, size: int = -1) -> PdFrame:
         """Convert to pandas.DataFrame."""
 
         return PdFrame(
-            data=self.to_python(),
+            data=self.to_python(size),
             columns=self.columns,
         )
 
-    def to_polars(self) -> PlFrame:
+    def to_polars(self, size: int = -1) -> PlFrame:
         """Convert to polars.DataFrame."""
 
         return PlFrame(
-            data=self.to_python(),
+            data=self.to_python(size),
             schema=self.columns,
             orient="row",
         )
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self, size: int = -1) -> bytes:
         """Get raw unpacked data."""
 
         self.pgcopy_compressor.seek(0)
 
-        return self.pgcopy_compressor.read()
+        return self.pgcopy_compressor.read(size)
