@@ -36,6 +36,9 @@ if TYPE_CHECKING:
     from zstandard import ZstdCompressionWriter
 
 
+NAN2NONE = {float("nan"): None}
+
+
 class PGPackWriter:
     """Class for write PGPack format."""
 
@@ -204,7 +207,7 @@ class PGPackWriter:
             self.write_metadata(metadata_from_frame(data_frame))
 
         return self.from_python([[
-            {float("nan"): None}.get(
+            NAN2NONE.get(
                 data_value,
                 int(data_value)
                 if self.pgtypes[column] in (
