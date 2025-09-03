@@ -30,6 +30,7 @@ from .metadata import (
     metadata_reader,
 )
 from .offset import OffsetOpener
+from .structs import PGParam
 
 if TYPE_CHECKING:
     from lz4.frame import LZ4FrameFile
@@ -46,6 +47,7 @@ class PGPackWriter:
     compression_method: CompressionMethod
     columns: list[str]
     pgtypes: list[PGOid]
+    pgparam: list[PGParam]
     metadata_end: int
     fileobj_end: int
     pgcopy_compressed_length: int
@@ -63,6 +65,7 @@ class PGPackWriter:
         self.compression_method = compression_method
         self.columns = []
         self.pgtypes = []
+        self.pgparam = []
         self.metadata_end = 0
         self.fileobj_end = 0
         self.pgcopy_compressed_length = 0
@@ -88,7 +91,7 @@ class PGPackWriter:
         self.fileobj.flush()
 
         self.metadata_end = len(metadata_zlib) + 16
-        self.columns, self.pgtypes = metadata_reader(metadata)
+        self.columns, self.pgtypes, self.pgparam = metadata_reader(metadata)
         self._str = None
 
         return self.metadata_end
@@ -182,10 +185,10 @@ class PGPackWriter:
             pgtypes=self.pgtypes,
         )
         pgcopy_writer.write(dtype_data)
-        pgcopy_writer.close()
+        pgcopy_writer.finalize()
 
         self.pgcopy_compressed_length: int = offset_opener.tell()
-        self.pgcopy_data_length: int = compressor.tell()
+        self.pgcopy_data_length: int = pgcopy_writer.tell()
         self.fileobj_end: int = self.fileobj.tell()
 
         self.fileobj.seek(self.metadata_end + 1)

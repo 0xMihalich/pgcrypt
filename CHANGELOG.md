@@ -1,5 +1,13 @@
 # Version History
 
+## 0.1.3
+
+* Add PGParam class
+* Add values length and numeric precision/scale
+* Add pgparam attibute into PGPackReader and PGPackWriter
+* Fix ZSTD unpacked length where write with to_python() method
+* Update requeriments.txt
+
 ## 0.1.2
 
 * Rename project to pgpack

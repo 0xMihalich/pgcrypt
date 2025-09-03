@@ -27,6 +27,7 @@ from .enums import CompressionMethod
 from .header import HEADER
 from .metadata import metadata_reader
 from .offset import OffsetOpener
+from .structs import PGParam
 from .zstdstream import ZstdDecompressionReader
 
 
@@ -36,6 +37,7 @@ class PGPackReader:
     fileobj: BufferedReader
     columns: list[str]
     pgtypes: list[PGOid]
+    pgparam: list[PGParam]
     pgcopy: PGCopy
     header: bytes
     metadata_crc: int
@@ -73,7 +75,7 @@ class PGPackReader:
         if crc32(self.metadata_zlib) != self.metadata_crc:
             raise PGPackMetadataCrcError()
 
-        self.columns, self.pgtypes = metadata_reader(
+        self.columns, self.pgtypes, self.pgparam = metadata_reader(
             decompress(self.metadata_zlib)
         )
         (

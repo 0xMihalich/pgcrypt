@@ -66,7 +66,8 @@ Initialization parameters
 Methods and attributes
 
 - columns - List columns names
-- dtypes - List PGOid for all columns
+- pgtypes - List PGOid for all columns
+- pgparam - List PGParam for all columns
 - pgcopy - PGCopy object
 - header - b"PGPack\n" 8 bytes
 - metadata_crc - integer crc32 sign for metadata_zlib object
@@ -92,7 +93,8 @@ Initialization parameters
 Methods and attributes
 
 - columns - List columns names
-- dtypes - List PGOid for all columns
+- pgtypes - List PGOid for all columns
+- pgparam - List PGParam for all columns
 - metadata_end - Integer, zlib packed metadata end position
 - fileobj_end - Integer, packed pgcopy data end position
 - pgcopy_compressed_length - integer packed pgcopy data length
