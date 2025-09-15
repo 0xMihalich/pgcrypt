@@ -37,17 +37,21 @@ AssociatePyType: dict[Any, tuple[int, ...]] = {
 }
 
 
-def detect_oid(data_values: Any, is_array: bool = False) -> tuple[int, ...]:
+def detect_oid(
+    data_values: Any,
+    is_array: bool = False,
+    nested: int = 0,
+) -> tuple[int, ...]:
     """Associate python type with postgres type."""
 
     for value in data_values:
-        if isinstance(value, list):
-            pg_type = detect_oid(value, True)
+        if isinstance(value, list | tuple):
+            pg_type = detect_oid(value, True, nested + 1)
             if pg_type:
                 return pg_type
             continue
         if not isinstance(value, NoneType):
             pg_oid: tuple[int] = AssociatePyType[value.__class__]
             if is_array:
-                return pg_oid[1], *pg_oid[2:]
-            return pg_oid[0], *pg_oid[2:]
+                return pg_oid[1], *pg_oid[2:], nested
+            return pg_oid[0], *pg_oid[2:], nested

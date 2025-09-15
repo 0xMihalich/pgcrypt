@@ -6,3 +6,4 @@ class PGParam(NamedTuple):
 
     length: int
     scale: int
+    nested: int

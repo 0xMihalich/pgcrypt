@@ -39,7 +39,20 @@ Metadata for PGCopy dump contained Column names and OID Types
 
 ### Decompressed metadata structure
 
-list[list[column number int, list[column name str, column oid int]]]
+```
+list[
+    list[
+        column number int,
+        list[
+            column name str,
+            column oid int,
+            column lengths int,
+            column scale int,
+            column nested int,
+        ]
+    ]
+]
+```
 
 ## Compression methods
 
