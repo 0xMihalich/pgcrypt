@@ -3,6 +3,7 @@
 ## 0.1.3.1
 
 * Add array nested into metadata
+* Add property method to CompressionMethod
 * Update README.md
 
 ## 0.1.3
