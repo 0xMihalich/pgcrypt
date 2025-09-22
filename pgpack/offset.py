@@ -18,7 +18,6 @@ class OffsetOpener:
 
         self.fileobj = fileobj
         self.offset = self.fileobj.tell()
-        self.fileobj.seek(self.offset)
 
     def __hash__(self) -> int:
         """OffsetOpener hash exploit."""

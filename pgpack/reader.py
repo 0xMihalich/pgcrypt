@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from io import BufferedReader
 from struct import unpack
 from typing import (
@@ -13,7 +14,7 @@ from zlib import (
 from lz4.frame import LZ4FrameFile
 from pandas import DataFrame as PdFrame
 from pgcopylib import (
-    PGCopy,
+    PGCopyReader,
     PGOid,
 )
 from polars import DataFrame as PlFrame
@@ -38,8 +39,9 @@ class PGPackReader:
     columns: list[str]
     pgtypes: list[PGOid]
     pgparam: list[PGParam]
-    pgcopy: PGCopy
+    pgcopy: PGCopyReader
     header: bytes
+    metadata: bytes
     metadata_crc: int
     metadata_length: int
     metadata_zlib: bytes
@@ -75,8 +77,9 @@ class PGPackReader:
         if crc32(self.metadata_zlib) != self.metadata_crc:
             raise PGPackMetadataCrcError()
 
+        self.metadata = decompress(self.metadata_zlib)
         self.columns, self.pgtypes, self.pgparam = metadata_reader(
-            decompress(self.metadata_zlib)
+            self.metadata
         )
         (
             compression_method,
@@ -93,7 +96,7 @@ class PGPackReader:
             self.offset_opener,
             self.compression_method,
         )
-        self.pgcopy = PGCopy(
+        self.pgcopy = PGCopyReader(
             self.pgcopy_compressor,
             self.pgtypes,
         )
@@ -145,24 +148,24 @@ Compression rate: {round(
 """
         return self._str
 
-    def to_python(self, size: int = -1) -> list[Any]:
+    def to_python(self) -> Generator[list[Any], None, None]:
         """Convert to python objects."""
 
-        return self.pgcopy.read(size)
+        return self.pgcopy.to_rows()
 
-    def to_pandas(self, size: int = -1) -> PdFrame:
+    def to_pandas(self) -> PdFrame:
         """Convert to pandas.DataFrame."""
 
         return PdFrame(
-            data=self.to_python(size),
+            data=self.pgcopy.to_rows(),
             columns=self.columns,
         )
 
-    def to_polars(self, size: int = -1) -> PlFrame:
+    def to_polars(self) -> PlFrame:
         """Convert to polars.DataFrame."""
 
         return PlFrame(
-            data=self.to_python(size),
+            data=self.pgcopy.to_rows(),
             schema=self.columns,
             orient="row",
         )
@@ -171,5 +174,4 @@ Compression rate: {round(
         """Get raw unpacked data."""
 
         self.pgcopy_compressor.seek(0)
-
         return self.pgcopy_compressor.read(size)

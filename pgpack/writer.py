@@ -48,6 +48,10 @@ class PGPackWriter:
     columns: list[str]
     pgtypes: list[PGOid]
     pgparam: list[PGParam]
+    metadata: bytes
+    metadata_crc: int
+    metadata_length: int
+    metadata_zlib: bytes
     metadata_end: int
     fileobj_end: int
     pgcopy_compressed_length: int
@@ -66,6 +70,10 @@ class PGPackWriter:
         self.columns = []
         self.pgtypes = []
         self.pgparam = []
+        self.metadata = b""
+        self.metadata_crc = 0
+        self.metadata_length = 0
+        self.metadata_zlib = b""
         self.metadata_end = 0
         self.fileobj_end = 0
         self.pgcopy_compressed_length = 0
@@ -81,16 +89,17 @@ class PGPackWriter:
     ) -> int:
         """Make blocks with metadata."""
 
-        metadata_zlib: bytes = compress(metadata)
-        metadata_crc: bytes = pack("!L", crc32(metadata_zlib))
-        metadata_length: bytes = pack("!L", len(metadata_zlib))
+        self.metadata = metadata
+        self.metadata_zlib = compress(self.metadata)
+        self.metadata_crc = pack("!L", crc32(self.metadata_zlib))
+        self.metadata_length = pack("!L", len(self.metadata_zlib))
 
-        self.fileobj.write(metadata_crc)
-        self.fileobj.write(metadata_length)
-        self.fileobj.write(metadata_zlib)
+        self.fileobj.write(self.metadata_crc)
+        self.fileobj.write(self.metadata_length)
+        self.fileobj.write(self.metadata_zlib)
         self.fileobj.flush()
 
-        self.metadata_end = len(metadata_zlib) + 16
+        self.metadata_end = len(self.metadata_zlib) + 16
         self.columns, self.pgtypes, self.pgparam = metadata_reader(metadata)
         self._str = None
 
@@ -185,7 +194,6 @@ class PGPackWriter:
             pgtypes=self.pgtypes,
         )
         pgcopy_writer.write(dtype_data)
-        pgcopy_writer.finalize()
 
         self.pgcopy_compressed_length: int = offset_opener.tell()
         self.pgcopy_data_length: int = pgcopy_writer.tell()

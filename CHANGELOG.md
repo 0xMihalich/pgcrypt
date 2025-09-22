@@ -1,5 +1,11 @@
 # Version History
 
+## 0.2.0.0
+
+* Update requirements.txt depends pgcopylib==0.2.0.1
+* Change methods to new pgcopylib library
+* Add attribute metadata with uncompress metadata bytes
+
 ## 0.1.3.1
 
 * Add array nested into metadata
