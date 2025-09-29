@@ -1,5 +1,10 @@
 # Version History
 
+## 0.2.0.1
+
+* Update requirements.txt depends pgcopylib==0.2.1.2
+* Add pandas.DataFrame & polars.DataFrame cast dtypes for PGPackReader
+
 ## 0.2.0.0
 
 * Update requirements.txt depends pgcopylib==0.2.0.1

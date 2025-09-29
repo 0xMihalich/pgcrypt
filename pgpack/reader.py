@@ -19,6 +19,10 @@ from pgcopylib import (
 )
 from polars import DataFrame as PlFrame
 
+from .cast_dataframes import (
+    pandas_astype,
+    polars_schema,
+)
 from .compressor import pgcopy_compressor
 from .errors import (
     PGPackHeaderError,
@@ -159,15 +163,20 @@ Compression rate: {round(
         return PdFrame(
             data=self.pgcopy.to_rows(),
             columns=self.columns,
-        )
+        ).astype(pandas_astype(
+            self.columns,
+            self.pgcopy.postgres_dtype,
+        ))
 
     def to_polars(self) -> PlFrame:
         """Convert to polars.DataFrame."""
 
         return PlFrame(
             data=self.pgcopy.to_rows(),
-            schema=self.columns,
-            orient="row",
+            schema=polars_schema(
+                self.columns,
+                self.pgcopy.postgres_dtype,
+            ),
         )
 
     def to_bytes(self, size: int = -1) -> bytes:
