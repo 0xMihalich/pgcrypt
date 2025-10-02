@@ -8,7 +8,7 @@ from polars import DataFrame as PlFrame
 from pgcopylib import PGOid
 
 from .detector import detect_oid
-from .structs import PGParam
+from .param import PGParam
 
 
 def metadata_reader(metadata: bytes) -> tuple[

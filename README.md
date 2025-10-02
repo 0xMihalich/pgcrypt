@@ -78,46 +78,42 @@ Initialization parameters
 
 Methods and attributes
 
+- metadata - metadata in bytes
 - columns - List columns names
 - pgtypes - List PGOid for all columns
 - pgparam - List PGParam for all columns
-- pgcopy - PGCopy object
-- header - b"PGPack\n" 8 bytes
-- metadata_crc - integer crc32 sign for metadata_zlib object
-- metadata_length - integer length metadata_zlib in bytes
-- metadata_zlib - zlib packed metadata in bytes
-- compression_method - CompressionMethod object
 - pgcopy_compressed_length - integer packed pgcopy data length
 - pgcopy_data_length - integer unpacked pgcopy data length
-- offset_opener - OffsetOpener object
-- pgcopy_compressor - File object for reading uncompressed PGCopy data
-- to_bytes() - Method for reading uncompressed PGCopy data as bytes
-- to_python() - Method for reading uncompressed PGCopy data as list of python objects
+- compression_method - CompressionMethod object
+- compression_stream - BufferedReader object for decompress data
+- pgcopy_start - integer offset for start pgcopy compressed data
+- pgcopy - PGCopyReader object
+- to_rows() - Method for reading uncompressed PGCopy data as generator python objects
 - to_pandas() - Method for reading uncompressed PGCopy data as pandas.DataFrame
 - to_polars() - Method for reading uncompressed PGCopy data as polars.DataFrame
+- to_bytes() - Method for reading uncompressed PGCopy data as generator bytes
 
 ## Class PGPackWriter
 
 Initialization parameters
 
-- fileobj - BufferedReader object (file, BytesIO e t.c)
-- compression_method - CompressionMethod object (default is CompressionMethod.LZ4)
+- fileobj - BufferedWriter object (file, BytesIO e t.c)
+- metadata - metadata in bytes (default is None)
+- compression_method - CompressionMethod object (default is CompressionMethod.ZSTD)
 
 Methods and attributes
 
 - columns - List columns names
 - pgtypes - List PGOid for all columns
 - pgparam - List PGParam for all columns
-- metadata_end - Integer, zlib packed metadata end position
-- fileobj_end - Integer, packed pgcopy data end position
-- pgcopy_compressed_length - integer packed pgcopy data length
-- pgcopy_data_length - integer unpacked pgcopy data length
-- write_metadata(metadata) - Make first blocks with metadata. Parameter: metadata as bytes
-- write_pgcopy(pgcopy) - Make second blocks with pgcopy. Parameter: pgcopy as BufferedReader
-- write(metadata, pgcopy) - Write PGPack file. Parameters: metadata as bytes, pgcopy as BufferedReader
-- from_python(dtype_data) - Write PGPack file from python objects. Parameter: dtype_data as python object list
+- pgcopy_compressed_length - integer packed pgcopy data length set to 0 as initialized
+- pgcopy_data_length - integer unpacked pgcopy data length set to -1 as initialized
+- pgcopy_start - integer offset for start pgcopy compressed data set to current offset as initialized
+- pgcopy - PGCopyWriter object
+- from_rows(dtype_data) - Write PGPack file from python objects. Parameter: dtype_data as python iterable object
 - from_pandas(data_frame) - Write PGPack file from pandas.DataFrame. Parameter: data_frame as pandas.DataFrame
 - from_polars(data_frame) - Write PGPack file from polars.DataFrame. Parameter: data_frame as polars.DataFrame
+- from_bytes(bytes_data) - Write PGPack file from bytes. Parameter: bytes_data as bytes iterable object
 
 ## Errors
 

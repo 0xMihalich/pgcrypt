@@ -3,7 +3,6 @@ from io import BufferedReader
 from struct import unpack
 from typing import (
     Any,
-    Union,
     Optional,
 )
 from zlib import (
@@ -11,7 +10,10 @@ from zlib import (
     decompress,
 )
 
-from lz4.frame import LZ4FrameFile
+from light_compressor import (
+    CompressionMethod,
+    define_reader,
+)
 from pandas import DataFrame as PdFrame
 from pgcopylib import (
     PGCopyReader,
@@ -19,45 +21,31 @@ from pgcopylib import (
 )
 from polars import DataFrame as PlFrame
 
-from .cast_dataframes import (
+from .common import (
+    HEADER,
+    metadata_reader,
     pandas_astype,
     polars_schema,
-)
-from .compressor import pgcopy_compressor
-from .errors import (
     PGPackHeaderError,
     PGPackMetadataCrcError,
+    PGParam,
 )
-from .enums import CompressionMethod
-from .header import HEADER
-from .metadata import metadata_reader
-from .offset import OffsetOpener
-from .structs import PGParam
-from .zstdstream import ZstdDecompressionReader
 
 
 class PGPackReader:
     """Class for read PGPack format."""
 
     fileobj: BufferedReader
+    metadata: bytes
     columns: list[str]
     pgtypes: list[PGOid]
     pgparam: list[PGParam]
-    pgcopy: PGCopyReader
-    header: bytes
-    metadata: bytes
-    metadata_crc: int
-    metadata_length: int
-    metadata_zlib: bytes
-    compression_method: CompressionMethod
     pgcopy_compressed_length: int
     pgcopy_data_length: int
-    offset_opener: OffsetOpener
-    pgcopy_compressor: Union[
-        OffsetOpener,
-        LZ4FrameFile,
-        ZstdDecompressionReader,
-    ]
+    compression_method: CompressionMethod
+    compression_stream: BufferedReader
+    pgcopy_start: int
+    pgcopy: PGCopyReader
     _str: Optional[str]
 
     def __init__(
@@ -67,24 +55,27 @@ class PGPackReader:
         """Class initialization."""
 
         self.fileobj = fileobj
-        self.header = self.fileobj.read(8)
 
-        if self.header != HEADER:
+        header = self.fileobj.read(8)
+
+        if header != HEADER:
             raise PGPackHeaderError()
 
-        self.metadata_crc, self.metadata_length = unpack(
+        metadata_crc, metadata_length = unpack(
             "!2L",
             self.fileobj.read(8),
         )
-        self.metadata_zlib = self.fileobj.read(self.metadata_length)
+        metadata_zlib = self.fileobj.read(metadata_length)
 
-        if crc32(self.metadata_zlib) != self.metadata_crc:
+        if crc32(metadata_zlib) != metadata_crc:
             raise PGPackMetadataCrcError()
 
-        self.metadata = decompress(self.metadata_zlib)
-        self.columns, self.pgtypes, self.pgparam = metadata_reader(
-            self.metadata
-        )
+        self.metadata = decompress(metadata_zlib)
+        (
+            self.columns,
+            self.pgtypes,
+            self.pgparam,
+        ) = metadata_reader(self.metadata)
         (
             compression_method,
             self.pgcopy_compressed_length,
@@ -95,13 +86,13 @@ class PGPackReader:
         )
 
         self.compression_method = CompressionMethod(compression_method)
-        self.offset_opener = OffsetOpener(self.fileobj)
-        self.pgcopy_compressor = pgcopy_compressor(
-            self.offset_opener,
+        self.compression_stream = define_reader(
+            self.fileobj,
             self.compression_method,
         )
+        self.pgcopy_start = self.fileobj.tell()
         self.pgcopy = PGCopyReader(
-            self.pgcopy_compressor,
+            self.compression_stream,
             self.pgtypes,
         )
         self._str = None
@@ -152,7 +143,7 @@ Compression rate: {round(
 """
         return self._str
 
-    def to_python(self) -> Generator[list[Any], None, None]:
+    def to_rows(self) -> Generator[list[Any], None, None]:
         """Convert to python objects."""
 
         return self.pgcopy.to_rows()
@@ -179,8 +170,22 @@ Compression rate: {round(
             ),
         )
 
-    def to_bytes(self, size: int = -1) -> bytes:
-        """Get raw unpacked data."""
+    def to_bytes(self) -> Generator[bytes, None, None]:
+        """Get raw unpacked pgcopy data."""
 
-        self.pgcopy_compressor.seek(0)
-        return self.pgcopy_compressor.read(size)
+        if self.compression_method is CompressionMethod.NONE:
+            self.fileobj.seek(self.pgcopy_start)
+        else:
+            self.compression_stream.seek(0)
+
+        chunk_size = 65536
+        read_size = 0
+
+        while 1:
+            chunk = self.compression_stream.read(chunk_size)
+            read_size += len(chunk)
+
+            if not chunk:
+                break
+
+            yield chunk

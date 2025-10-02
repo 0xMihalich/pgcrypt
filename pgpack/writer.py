@@ -5,15 +5,18 @@ from io import (
 from struct import pack
 from typing import (
     Any,
-    Optional,
-    Union,
-    TYPE_CHECKING,
+    Iterable,
 )
 from zlib import (
     crc32,
     compress,
 )
 
+from light_compressor import (
+    CompressionMethod,
+    LZ4Compressor,
+    ZSTDCompressor,
+)
 from pandas import DataFrame as PdFrame
 from polars import DataFrame as PlFrame
 from pgcopylib import (
@@ -21,20 +24,14 @@ from pgcopylib import (
     PGOid,
 )
 
-from .compressor import pgcopy_compressor
-from .enums import CompressionMethod
-from .errors import PGPackMetadataCrcError
-from .header import HEADER
-from .metadata import (
+from .common import (
+    HEADER,
     metadata_from_frame,
     metadata_reader,
+    PGPackMetadataCrcError,
+    PGPackModeError,
+    PGParam,
 )
-from .offset import OffsetOpener
-from .structs import PGParam
-
-if TYPE_CHECKING:
-    from lz4.frame import LZ4FrameFile
-    from zstandard import ZstdCompressionWriter
 
 
 NAN2NONE = {float("nan"): None}
@@ -43,205 +40,37 @@ NAN2NONE = {float("nan"): None}
 class PGPackWriter:
     """Class for write PGPack format."""
 
-    fileobj: BufferedWriter
-    compression_method: CompressionMethod
+    fileobj: BufferedReader
+    metadata: bytes | None
     columns: list[str]
     pgtypes: list[PGOid]
     pgparam: list[PGParam]
-    metadata: bytes
-    metadata_crc: int
-    metadata_length: int
-    metadata_zlib: bytes
-    metadata_end: int
-    fileobj_end: int
     pgcopy_compressed_length: int
     pgcopy_data_length: int
-    _str: Optional[str]
+    compression_method: CompressionMethod
+    pgcopy_start: int
+    pgcopy: PGCopyWriter | None
+    _str: str | None
 
     def __init__(
         self,
         fileobj: BufferedWriter,
-        compression_method: CompressionMethod = CompressionMethod.LZ4,
+        metadata: bytes | None = None,
+        compression_method: CompressionMethod = CompressionMethod.ZSTD,
     ) -> None:
         """Class initialization."""
 
         self.fileobj = fileobj
-        self.compression_method = compression_method
+        self.metadata = metadata
         self.columns = []
         self.pgtypes = []
         self.pgparam = []
-        self.metadata = b""
-        self.metadata_crc = 0
-        self.metadata_length = 0
-        self.metadata_zlib = b""
-        self.metadata_end = 0
-        self.fileobj_end = 0
         self.pgcopy_compressed_length = 0
         self.pgcopy_data_length = -1
+        self.compression_method = compression_method
+        self.pgcopy_start = self.fileobj.tell()
+        self.pgcopy = None
         self._str = None
-
-        self.fileobj.seek(0)
-        self.fileobj.write(HEADER)
-
-    def write_metadata(
-        self,
-        metadata: bytes,
-    ) -> int:
-        """Make blocks with metadata."""
-
-        self.metadata = metadata
-        self.metadata_zlib = compress(self.metadata)
-        self.metadata_crc = pack("!L", crc32(self.metadata_zlib))
-        self.metadata_length = pack("!L", len(self.metadata_zlib))
-
-        self.fileobj.write(self.metadata_crc)
-        self.fileobj.write(self.metadata_length)
-        self.fileobj.write(self.metadata_zlib)
-        self.fileobj.flush()
-
-        self.metadata_end = len(self.metadata_zlib) + 16
-        self.columns, self.pgtypes, self.pgparam = metadata_reader(metadata)
-        self._str = None
-
-        return self.metadata_end
-
-    def write_pgcopy(
-        self,
-        pgcopy: BufferedReader,
-    ) -> int:
-        """Make blocks with pgcopy."""
-
-        if not self.metadata_end:
-            raise PGPackMetadataCrcError()
-
-        compression_method: bytes = pack("!B", self.compression_method.value)
-
-        self.fileobj.seek(self.metadata_end)
-        self.fileobj.write(compression_method)
-        self.fileobj.write(bytes(16))  # write empty data for correction later
-
-        offset_opener = OffsetOpener(self.fileobj)
-        pgcopy_writer: Union[
-            OffsetOpener,
-            LZ4FrameFile,
-            ZstdCompressionWriter,
-        ] = pgcopy_compressor(
-            offset_opener,
-            self.compression_method,
-        )
-
-        if hasattr(pgcopy, "copy_reader"):
-            for data in pgcopy.copy_reader():
-                pgcopy_writer.write(data)
-        else:
-            pgcopy_writer.write(pgcopy.read())
-
-        if not isinstance(pgcopy_writer, OffsetOpener):
-            pgcopy_writer.close()
-
-        self.pgcopy_compressed_length: int = offset_opener.tell()
-        self.pgcopy_data_length: int = pgcopy.tell()
-        self.fileobj_end: int = self.fileobj.tell()
-
-        self.fileobj.seek(self.metadata_end + 1)
-        self.fileobj.write(
-            pack("!2Q", self.pgcopy_compressed_length, self.pgcopy_data_length)
-        )
-        self.fileobj.flush()
-        self._str = None
-
-        return self.fileobj_end
-
-    def write(
-        self,
-        metadata: bytes,
-        pgcopy: BufferedReader,
-    ) -> int:
-        """Write PGPack file."""
-
-        self.write_metadata(metadata)
-        self.write_pgcopy(pgcopy)
-        self.fileobj.close()
-
-        return self.fileobj_end
-
-    def from_python(
-        self,
-        dtype_data: list[list[Any]],
-    ) -> None:
-        """Write PGPack file from python objects."""
-
-        if not self.metadata_end:
-            raise PGPackMetadataCrcError()
-
-        compression_method: bytes = pack("!B", self.compression_method.value)
-
-        self.fileobj.seek(self.metadata_end)
-        self.fileobj.write(compression_method)
-        self.fileobj.write(bytes(16))  # write empty data for correction later
-
-        offset_opener = OffsetOpener(self.fileobj)
-        compressor: Union[
-            OffsetOpener,
-            LZ4FrameFile,
-            ZstdCompressionWriter,
-        ] = pgcopy_compressor(
-            offset_opener,
-            self.compression_method,
-        )
-        pgcopy_writer = PGCopyWriter(
-            compressor,
-            pgtypes=self.pgtypes,
-        )
-        pgcopy_writer.write(dtype_data)
-
-        self.pgcopy_compressed_length: int = offset_opener.tell()
-        self.pgcopy_data_length: int = pgcopy_writer.tell()
-        self.fileobj_end: int = self.fileobj.tell()
-
-        self.fileobj.seek(self.metadata_end + 1)
-        self.fileobj.write(
-            pack("!2Q", self.pgcopy_compressed_length, self.pgcopy_data_length)
-        )
-        self.fileobj.flush()
-        self._str = None
-
-        return self.fileobj_end
-
-    def from_pandas(
-        self,
-        data_frame: PdFrame,
-    ) -> None:
-        """Write PGPack file from pandas.DataFrame."""
-
-        if not self.metadata_end:
-            self.write_metadata(metadata_from_frame(data_frame))
-
-        return self.from_python([[
-            NAN2NONE.get(
-                data_value,
-                int(data_value)
-                if self.pgtypes[column] in (
-                    PGOid.int2,
-                    PGOid.int4,
-                    PGOid.int8,
-                    PGOid.oid,
-                )
-                else data_value,
-            )
-            for column, data_value in enumerate(data_values)
-        ] for data_values in data_frame.values])
-
-    def from_polars(
-        self,
-        data_frame: PlFrame,
-    ) -> None:
-        """Write PGPack file from polars.DataFrame."""
-
-        if not self.metadata_end:
-            self.write_metadata(metadata_from_frame(data_frame))
-
-        return self.from_python(data_frame.iter_rows())
 
     def __repr__(self) -> str:
         """String representation in interpreter."""
@@ -288,3 +117,103 @@ Compression rate: {round(
 )} %
 """
         return self._str
+
+    def from_rows(
+        self,
+        dtype_values: Iterable[Any],
+    ) -> str:
+        """Convert python rows to pgpack format."""
+
+        return self.from_bytes(self.pgcopy.from_rows(dtype_values))
+
+    def from_pandas(
+        self,
+        data_frame: PdFrame,
+    ) -> str:
+        """Convert pandas.DataFrame to pgpack format."""
+
+        if not self.metadata:
+            self.metadata = metadata_from_frame(data_frame)
+
+        return self.from_rows(iter(data_frame.values))
+
+    def from_polars(
+        self,
+        data_frame: PlFrame,
+    ) -> str:
+        """Convert polars.DataFrame to pgpack format."""
+
+        if not self.metadata:
+            self.metadata = metadata_from_frame(data_frame)
+
+        return self.from_rows(data_frame.iter_rows())
+
+    def from_bytes(
+        self,
+        bytes_data: Iterable[bytes],
+    ) -> str:
+        """Convert pgcopy bytes to pgpack format."""
+
+
+
+        if self.compression_method is CompressionMethod.NONE:
+            compressor = None
+        elif self.compression_method is CompressionMethod.LZ4:
+            compressor = LZ4Compressor()
+        elif self.compression_method is CompressionMethod.ZSTD:
+            compressor = ZSTDCompressor()
+        else:
+            raise ValueError(
+                f"Unsupported compression method {self.compression_method}"
+            )
+
+        if not self.fileobj:
+            raise ValueError("Fileobject not define.")
+        if not self.fileobj.writable():
+            raise PGPackModeError("Fileobject don't support write.")
+        if not self.metadata:
+            raise PGPackMetadataCrcError("Metadata error.")
+
+        (
+            self.columns,
+            self.pgtypes,
+            self.pgparam,
+        ) = metadata_reader(self.metadata)
+        self.pgcopy = PGCopyWriter(None, self.pgtypes)
+        metadata_zlib = compress(self.metadata)
+        metadata_crc = pack("!L", crc32(metadata_zlib))
+        metadata_length = pack("!L", len(metadata_zlib))
+        compression_method = pack("!B", self.compression_method.value)
+
+        for data in (
+            HEADER,
+            metadata_crc,
+            metadata_length,
+            metadata_zlib,
+            compression_method,
+            bytes(16),
+        ):
+            self.pgcopy_start += self.fileobj.write(data)
+
+        if compressor:
+            bytes_data = compressor.send_chunks(bytes_data)
+
+        for data in bytes_data:
+            self.fileobj.write(data)
+
+        self.pgcopy_compressed_length = self.fileobj.tell() - self.pgcopy_start
+
+        if compressor:
+            self.pgcopy_data_length = compressor.decompressed_size
+        else:
+            self.pgcopy_data_length = self.pgcopy_compressed_length
+
+        self.fileobj.seek(self.pgcopy_start - 16)
+        self.fileobj.write(pack(
+            "!2Q",
+            self.pgcopy_compressed_length,
+            self.pgcopy_data_length,
+        ))
+        self.fileobj.flush()
+        self._str = None
+        return self.__str__()

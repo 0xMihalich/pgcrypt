@@ -1,5 +1,19 @@
 # Version History
 
+## 0.3.0.0
+
+* Delete python internal compressed libraryes
+* Change requirements.txt
+* Change methods & class attributes
+* Change write strategy
+* Change default write compression to ZSTD
+* Update README.md
+* Redistribute project directories
+* Refactor PGPackReader & PGPackWriter classes
+* Compressed core change to light-compressor
+* Fix detect_oid function for pandas.Timestamp type
+* Fix pandas.DataFrame string dtype from object to string[python]
+
 ## 0.2.0.1
 
 * Update requirements.txt depends pgcopylib==0.2.1.2

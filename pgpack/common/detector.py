@@ -11,21 +11,22 @@ from ipaddress import (
     IPv6Address,
     IPv6Network,
 )
-from typing import (
-    Any,
-    Union,
-)
+from typing import Any
 from types import NoneType
 from uuid import UUID
+
+from pandas import Timestamp
 
 
 AssociatePyType: dict[Any, tuple[int, ...]] = {
     bool: (16, 1000, 1, 0),
     bytes: (17, 1001, -1, 0),
-    Union[IPv4Network, IPv6Network]: (650, 651, -1, 0),
+    IPv4Network: (650, 651, -1, 0),
+    IPv6Network: (650, 651, -1, 0),
     date: (1082, 1182, 4, 0),
     float: (701, 1022, 8, 0),
-    Union[IPv4Address, IPv6Address]: (869, 1041, -1, 0),
+    IPv4Address: (869, 1041, -1, 0),
+    IPv6Address: (869, 1041, -1, 0),
     int: (20, 1016, 8, 0),
     relativedelta: (1186, 1187, -1, 0),
     dict: (114, 199, -1, 0),
@@ -33,6 +34,7 @@ AssociatePyType: dict[Any, tuple[int, ...]] = {
     str: (25, 1009, -1, 0),
     time: (1083, 1183, 8, 0),
     datetime: (1114, 1115, 8, 0),
+    Timestamp: (1114, 1115, 8, 0),
     UUID: (2950, 2951, 16, 0),
 }
 

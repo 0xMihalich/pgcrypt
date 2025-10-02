@@ -14,7 +14,7 @@ PANDAS_TYPE: dict[type, str] = {
     datetime: "datetime64[ns]",
     float: "float64",
     int: "int64",
-    str: "str",
+    str: "string",
 }
 
 

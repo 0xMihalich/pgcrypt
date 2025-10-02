@@ -2,8 +2,10 @@
 packed into LZ4, ZSTD or uncompressed
 with meta data information packed into zlib."""
 
-from .enums import CompressionMethod
-from .errors import (
+from light_compressor import CompressionMethod
+
+from .common import (
+    metadata_from_frame,
     PGPackError,
     PGPackHeaderError,
     PGPackMetadataCrcError,
@@ -14,6 +16,7 @@ from .writer import PGPackWriter
 
 
 __all__ = (
+    "metadata_from_frame",
     "CompressionMethod",
     "PGPackError",
     "PGPackHeaderError",
@@ -23,4 +26,4 @@ __all__ = (
     "PGPackWriter",
 )
 __author__ = "0xMihalich"
-__version__ = "0.2.0.1"
+__version__ = "0.3.0.0"
