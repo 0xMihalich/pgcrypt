@@ -154,8 +154,6 @@ Compression rate: {round(
     ) -> str:
         """Convert pgcopy bytes to pgpack format."""
 
-
-
         if self.compression_method is CompressionMethod.NONE:
             compressor = None
         elif self.compression_method is CompressionMethod.LZ4:

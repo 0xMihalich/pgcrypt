@@ -1,5 +1,11 @@
 # Version History
 
+## 0.3.0.1
+
+* Small refactor PGPackWriter 
+* Update requirements.txt depends pgcopylib==0.2.1.4
+* Add MIT License
+
 ## 0.3.0.0
 
 * Delete python internal compressed libraryes
