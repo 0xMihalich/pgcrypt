@@ -66,8 +66,8 @@ list[
 from pgpack import CompressionMethod
 
 compression_method = CompressionMethod.NONE  # no compression
-compression_method = CompressionMethod.LZ4  # lz4 compression (default)
-compression_method = CompressionMethod.ZSTD  # zstd compression
+compression_method = CompressionMethod.LZ4  # lz4 compression
+compression_method = CompressionMethod.ZSTD  # zstd compression (default)
 ```
 
 ## Class PGPackReader
