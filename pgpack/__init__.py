@@ -6,6 +6,7 @@ from light_compressor import CompressionMethod
 
 from .common import (
     metadata_from_frame,
+    metadata_reader,
     PGPackError,
     PGPackHeaderError,
     PGPackMetadataCrcError,
@@ -17,6 +18,7 @@ from .writer import PGPackWriter
 
 __all__ = (
     "metadata_from_frame",
+    "metadata_reader",
     "CompressionMethod",
     "PGPackError",
     "PGPackHeaderError",
@@ -26,4 +28,4 @@ __all__ = (
     "PGPackWriter",
 )
 __author__ = "0xMihalich"
-__version__ = "0.3.0.1"
+__version__ = "0.3.0.2"
