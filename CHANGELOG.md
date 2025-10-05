@@ -1,5 +1,12 @@
 # Version History
 
+## 0.3.0.3
+
+* Add MANIFEST.in
+* Add tell() & close() methods to PGPackReader & PGPackWriter
+* Update requirements.txt depends pgcopylib==0.2.1.5
+* Update requirements.txt depends light_compressor==0.0.1.5
+
 ## 0.3.0.2
 
 * Add metadata_reader import

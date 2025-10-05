@@ -189,3 +189,14 @@ Compression rate: {round(
                 break
 
             yield chunk
+
+    def tell(self) -> int:
+        """Return current position."""
+
+        return self.fileobj.tell()
+
+    def close(self) -> None:
+        """Close file object."""
+
+        self.pgcopy.close()
+        self.fileobj.close()
