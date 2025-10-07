@@ -118,11 +118,27 @@ Compression rate: {round(
 """
         return self._str
 
+    def __init_copy(self) -> None:
+        """Initialize pgcopy from self.metadata."""
+
+        (
+            self.columns,
+            self.pgtypes,
+            self.pgparam,
+        ) = metadata_reader(self.metadata)
+        self.pgcopy = PGCopyWriter(None, self.pgtypes)
+
     def from_rows(
         self,
         dtype_values: Iterable[Any],
     ) -> str:
         """Convert python rows to pgpack format."""
+
+        if not self.metadata:
+            raise PGPackMetadataCrcError("Metadata error.")
+
+        if not self.pgcopy:
+            self.__init_copy()
 
         return self.from_bytes(self.pgcopy.from_rows(dtype_values))
 
@@ -172,12 +188,9 @@ Compression rate: {round(
         if not self.metadata:
             raise PGPackMetadataCrcError("Metadata error.")
 
-        (
-            self.columns,
-            self.pgtypes,
-            self.pgparam,
-        ) = metadata_reader(self.metadata)
-        self.pgcopy = PGCopyWriter(None, self.pgtypes)
+        if not self.pgcopy:
+            self.__init_copy()
+
         metadata_zlib = compress(self.metadata)
         metadata_crc = pack("!L", crc32(metadata_zlib))
         metadata_length = pack("!L", len(metadata_zlib))

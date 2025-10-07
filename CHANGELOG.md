@@ -1,5 +1,12 @@
 # Version History
 
+## 0.3.0.4
+
+* Update requirements.txt depends pgcopylib==0.2.1.6
+* Update requirements.txt depends light_compressor==0.0.1.6
+* Fix PGPackWriter from_rows() function
+* Add PGPackWriter.__init_copy() function
+
 ## 0.3.0.3
 
 * Add MANIFEST.in
