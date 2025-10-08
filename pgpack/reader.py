@@ -193,7 +193,7 @@ Compression rate: {round(
     def tell(self) -> int:
         """Return current position."""
 
-        return self.fileobj.tell()
+        return self.pgcopy.tell()
 
     def close(self) -> None:
         """Close file object."""

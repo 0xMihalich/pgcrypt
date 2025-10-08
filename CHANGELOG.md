@@ -1,5 +1,10 @@
 # Version History
 
+## 0.3.0.5
+
+* Change PGPackReader & PGPackWriter tell() method
+* Add numpy data types to AssociatePyType dictionary
+
 ## 0.3.0.4
 
 * Update requirements.txt depends pgcopylib==0.2.1.6

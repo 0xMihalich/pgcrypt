@@ -13,7 +13,7 @@ with open(file="README.md", encoding="utf-8") as f:
 
 setup(
     name="pgpack",
-    version="0.3.0.4",
+    version="0.3.0.5",
     packages=find_packages(),
     author="0xMihalich",
     author_email="bayanmobile87@gmail.com",
