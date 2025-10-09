@@ -25,7 +25,6 @@ from .common import (
     HEADER,
     metadata_reader,
     pandas_astype,
-    polars_schema,
     PGPackHeaderError,
     PGPackMetadataCrcError,
     PGParam,
@@ -164,10 +163,7 @@ Compression rate: {round(
 
         return PlFrame(
             data=self.pgcopy.to_rows(),
-            schema=polars_schema(
-                self.columns,
-                self.pgcopy.postgres_dtype,
-            ),
+            schema=self.columns,
         )
 
     def to_bytes(self) -> Generator[bytes, None, None]:

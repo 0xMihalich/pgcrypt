@@ -1,6 +1,5 @@
 from .cast_dataframes import (
     pandas_astype,
-    polars_schema,
 )
 from .detector import detect_oid
 from .errors import (
@@ -23,7 +22,6 @@ __all__ = (
     "metadata_from_frame",
     "metadata_reader",
     "pandas_astype",
-    "polars_schema",
     "PGPackError",
     "PGPackHeaderError",
     "PGPackModeError",

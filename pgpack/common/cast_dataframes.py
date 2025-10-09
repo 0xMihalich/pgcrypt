@@ -1,7 +1,4 @@
-from datetime import (
-    date,
-    datetime,
-)
+from datetime import date
 from types import NoneType
 
 from pgcopylib.common.dtypes.dtype import PostgreSQLDtype
@@ -11,7 +8,6 @@ PANDAS_TYPE: dict[type, str] = {
     NoneType: "nan",
     bool: "?",
     date: "datetime64[ns]",
-    datetime: "datetime64[ns]",
     float: "float64",
     int: "int64",
     str: "string",
@@ -27,19 +23,6 @@ def pandas_astype(
     astype: dict[str, str] = {}
 
     for column, pgtype in zip(columns, postgres_dtype):
-        astype[column] = PANDAS_TYPE.get(pgtype.pytype, "O")
+        astype[column] = PANDAS_TYPE.get(pgtype.pytype)
 
     return astype
-
-
-def polars_schema(
-    columns: list[str],
-    postgres_dtype: list[PostgreSQLDtype],
-) -> dict[str, type]:
-    """Make polars schema from columns."""
-
-    shema: dict[str, type] = {}
-    for column, pgtype in zip(columns, postgres_dtype):
-        shema[column] = pgtype.pytype
-
-    return shema

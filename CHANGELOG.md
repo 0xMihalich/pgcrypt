@@ -1,5 +1,10 @@
 # Version History
 
+## 0.3.0.6
+
+* Delete polars_schema its interferes with correct operation to_polars() method
+* Fix pandas_astype
+
 ## 0.3.0.5
 
 * Change PGPackReader & PGPackWriter tell() method
