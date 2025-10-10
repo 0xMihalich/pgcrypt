@@ -1,5 +1,11 @@
 # Version History
 
+## 0.3.0.7
+
+* Update depends pgcopylib==0.2.1.7
+* Update depends light_compressor==0.0.1.7
+* Update depends setuptools==80.9.0
+
 ## 0.3.0.6
 
 * Delete polars_schema its interferes with correct operation to_polars() method
