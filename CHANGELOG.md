@@ -1,5 +1,10 @@
 # Version History
 
+## 0.3.0.8
+
+* Update depends pgcopylib==0.2.1.8
+* Add automake universal wheel
+
 ## 0.3.0.7
 
 * Update depends pgcopylib==0.2.1.7
