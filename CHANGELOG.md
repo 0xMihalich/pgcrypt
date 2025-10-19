@@ -1,5 +1,12 @@
 # Version History
 
+## 0.3.0.9
+
+* Update depends pgcopylib==0.2.1.9
+* Update depends light_compressor==0.0.1.8
+* Change str and repr column view
+* Add auto upload to pip
+
 ## 0.3.0.8
 
 * Update depends pgcopylib==0.2.1.8
