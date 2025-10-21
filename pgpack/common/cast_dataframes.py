@@ -9,7 +9,6 @@ PANDAS_TYPE: dict[type, str] = {
     bool: "?",
     date: "datetime64[ns]",
     float: "float64",
-    int: "int64",
     str: "string",
 }
 

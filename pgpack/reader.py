@@ -164,6 +164,7 @@ Compression rate: {round(
         return PlFrame(
             data=self.pgcopy.to_rows(),
             schema=self.columns,
+            infer_schema_length=None,
         )
 
     def to_bytes(self) -> Generator[bytes, None, None]:

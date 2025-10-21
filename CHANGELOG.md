@@ -1,5 +1,11 @@
 # Version History
 
+## 0.3.1.0
+
+* Update depends pgcopylib==0.2.2.0
+* Fixed conversion to pandas for null values ​​in int columns
+* Fixed an issue with converting to polars for large numeric values
+
 ## 0.3.0.9
 
 * Update depends pgcopylib==0.2.1.9
