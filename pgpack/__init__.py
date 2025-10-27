@@ -28,4 +28,4 @@ __all__ = (
     "PGPackWriter",
 )
 __author__ = "0xMihalich"
-__version__ = "0.3.1.0"
+__version__ = "0.3.1.1"
