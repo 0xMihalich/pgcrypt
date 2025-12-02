@@ -1,5 +1,10 @@
 # Version History
 
+## 0.3.1.2
+
+* Update depends pgcopylib==0.2.2.3
+* Fix write_timestamp error Can't subtract offset-naive and offset-aware datetimes
+
 ## 0.3.1.1
 
 * Update depends pgcopylib==0.2.2.2
