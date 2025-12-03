@@ -1,5 +1,11 @@
 # Version History
 
+## 0.3.1.5
+
+* Update depends pgcopylib==0.2.2.6
+* Update depends light-compressor==0.0.2.0
+* Downgrade compile depends to setuptools<70
+
 ## 0.3.1.4
 
 * Update depends pgcopylib==0.2.2.5
