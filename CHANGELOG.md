@@ -1,5 +1,10 @@
 # Version History
 
+## 0.3.2.0
+
+* Update depends pgcopylib==0.2.3.0
+* Fix unpack requires a buffer of 4 bytes for unix systems
+
 ## 0.3.1.7
 
 * Update depends pgcopylib==0.2.2.8
