@@ -1,4 +1,4 @@
 pandas>=2.1.0
 polars>=0.20.31
-pgcopylib==0.2.2.6
-light_compressor==0.0.2.0
+pgcopylib==0.2.2.7
+light_compressor==0.0.2.1
