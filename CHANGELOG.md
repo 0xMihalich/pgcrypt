@@ -1,5 +1,9 @@
 # Version History
 
+## 0.3.2.1
+
+* Update depends pgcopylib==0.2.3.1
+
 ## 0.3.2.0
 
 * Update depends pgcopylib==0.2.3.0
