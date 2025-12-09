@@ -1,5 +1,10 @@
 # Version History
 
+## 0.3.2.2
+
+* Update depends pgcopylib==0.2.3.2
+* Fix install on unix systems
+
 ## 0.3.2.1
 
 * Update depends pgcopylib==0.2.3.1
